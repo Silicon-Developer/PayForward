@@ -34,6 +34,9 @@ fun SecurityHubScreen(viewModel: SettingsViewModel = viewModel()) {
     val smsNumber by viewModel.smsNumber.collectAsState()
     val testResult by viewModel.testResult.collectAsState()
     val isTesting by viewModel.isTesting.collectAsState()
+    
+    val isAntiSpoofingEnabled by viewModel.isAntiSpoofingEnabled.collectAsState()
+    val trustedSenderIds by viewModel.trustedSenderIds.collectAsState()
 
     val haptic = LocalHapticFeedback.current
 
@@ -291,9 +294,9 @@ fun SecurityHubScreen(viewModel: SettingsViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // ── Anti-Spoofing Checker ────────────────────────────
+        // ── Anti-Spoofing Filter ────────────────────────────
         Text(
-            text = "ANTI-SPOOFING SCANNER",
+            text = "ANTI-SPOOFING FILTER",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp)
@@ -308,98 +311,125 @@ fun SecurityHubScreen(viewModel: SettingsViewModel = viewModel()) {
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                Text(
-                    text = "Verify Sender Identity",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Enter a 6-character TRAI sender ID to check if it matches official bank formats (e.g. AD-HDFCBK).",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 18.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedTextField(
-                    value = spoofSenderId,
-                    onValueChange = { spoofSenderId = it.uppercase() },
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Sender ID") },
-                    placeholder = { Text("e.g. AX-ICICIB") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
-                    leadingIcon = {
-                        Icon(Icons.Outlined.QrCodeScanner, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        val id = spoofSenderId.trim()
-                        if (id.isEmpty()) {
-                            spoofResult = "Please enter a Sender ID"
-                            spoofIsSafe = false
-                            return@Button
-                        }
-                        
-                        // Basic spoofing check logic
-                        if (id.length in 6..9) {
-                            val pattern = Regex("^[A-Z]{2}-[A-Z0-9]{3,}$")
-                            if (pattern.matches(id) || id.contains("HDFC") || id.contains("ICICI") || id.contains("SBI") || id.contains("PAYTM")) {
-                                spoofResult = "Identity Verified: Standard Bank Format."
-                                spoofIsSafe = true
-                            } else {
-                                spoofResult = "Caution: Does not match standard trusted header patterns."
-                                spoofIsSafe = false
-                            }
-                        } else if (id.matches(Regex("^[0-9]+$"))) {
-                            spoofResult = "Warning: Numeric sender IDs are often promotional or unsafe."
-                            spoofIsSafe = false
-                        } else {
-                            spoofResult = "Unrecognized Format: Treat with caution."
-                            spoofIsSafe = false
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Run Diagnostics")
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Enforce Sender Verification",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Block unauthorized senders and generic 10-digit numbers.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 18.sp
+                        )
+                    }
+                    Switch(
+                        checked = isAntiSpoofingEnabled,
+                        onCheckedChange = { 
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            viewModel.setAntiSpoofingEnabled(it) 
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        )
+                    )
                 }
 
-                if (spoofResult != null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (spoofIsSafe) PayForwardColors.StatusSuccess.copy(alpha = 0.1f)
-                            else PayForwardColors.StatusWarning.copy(alpha = 0.1f)
+                AnimatedVisibility(visible = isAntiSpoofingEnabled) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                        Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "TRUSTED SENDER IDs",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    ) {
-                        Row(
-                            Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = if (spoofIsSafe) Icons.Filled.GppGood else Icons.Filled.GppBad,
-                                contentDescription = null,
-                                tint = if (spoofIsSafe) PayForwardColors.StatusSuccess else PayForwardColors.StatusWarning
-                            )
-                            Spacer(Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (trustedSenderIds.isEmpty()) {
                             Text(
-                                text = spoofResult!!,
+                                text = "No trusted senders added. All alphanumeric senders will be passed, but 10-digit numbers are blocked.",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.SemiBold
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
+                        } else {
+                            // FlowRow for senders
+                            @OptIn(ExperimentalLayoutApi::class)
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                trustedSenderIds.forEach { sender ->
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                MaterialTheme.colorScheme.secondaryContainer,
+                                                RoundedCornerShape(8.dp)
+                                            )
+                                            .padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = sender,
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            IconButton(
+                                                onClick = { viewModel.removeTrustedSender(sender) },
+                                                modifier = Modifier.size(20.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Filled.Close,
+                                                    contentDescription = "Remove",
+                                                    modifier = Modifier.size(14.dp),
+                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            OutlinedTextField(
+                                value = spoofSenderId,
+                                onValueChange = { spoofSenderId = it.uppercase() },
+                                modifier = Modifier.weight(1f),
+                                label = { Text("Sender ID") },
+                                placeholder = { Text("e.g. AX-ICICIB") },
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Button(
+                                onClick = {
+                                    val id = spoofSenderId.trim()
+                                    if (id.isNotEmpty()) {
+                                        viewModel.addTrustedSender(id)
+                                        spoofSenderId = ""
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.height(56.dp).padding(top = 8.dp)
+                            ) {
+                                Text("Add")
+                            }
                         }
                     }
                 }

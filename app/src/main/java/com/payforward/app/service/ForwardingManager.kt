@@ -76,11 +76,8 @@ class ForwardingManager(private val context: Context) {
         val url = secureStorage.webhookUrl
         if (url.isBlank()) return@withContext false
 
-        val json = JSONObject().apply {
-            put("sender", sender)
-            put("message", body)
+        val json = PayloadExtractor.extract(body, sender).apply {
             put("matched_keywords", keywords.joinToString(", "))
-            put("timestamp", System.currentTimeMillis())
             put("app", "PayForward")
         }
 
@@ -167,11 +164,11 @@ class ForwardingManager(private val context: Context) {
         }
     }
 
-    suspend fun sendTestMessage(): Boolean {
+    suspend fun sendTestMessage(): Boolean = withContext(Dispatchers.IO) {
         val testSender = "PayForward-Test"
         val testBody = "This is a test message from PayForward. Keywords: UPI, credited."
 
-        return try {
+        return@withContext try {
             when (secureStorage.forwardingMethod) {
                 ForwardingMethod.WEBHOOK -> forwardViaWebhook(testSender, testBody, listOf("test"))
                 ForwardingMethod.TELEGRAM -> forwardViaTelegram(testSender, testBody, listOf("test"))

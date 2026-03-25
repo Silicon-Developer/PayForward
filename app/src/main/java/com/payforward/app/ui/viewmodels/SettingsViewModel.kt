@@ -40,6 +40,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _themeMode = MutableStateFlow(storage.themeMode)
     val themeMode: StateFlow<ThemeMode> = _themeMode
 
+    private val _isAntiSpoofingEnabled = MutableStateFlow(storage.isAntiSpoofingEnabled)
+    val isAntiSpoofingEnabled: StateFlow<Boolean> = _isAntiSpoofingEnabled
+
+    private val _trustedSenderIds = MutableStateFlow(storage.trustedSenderIds)
+    val trustedSenderIds: StateFlow<Set<String>> = _trustedSenderIds
+
     fun setForwardingMethod(method: ForwardingMethod) {
         _forwardingMethod.value = method
         storage.forwardingMethod = method
@@ -68,6 +74,23 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setThemeMode(mode: ThemeMode) {
         _themeMode.value = mode
         storage.themeMode = mode
+    }
+
+    fun setAntiSpoofingEnabled(enabled: Boolean) {
+        _isAntiSpoofingEnabled.value = enabled
+        storage.isAntiSpoofingEnabled = enabled
+    }
+
+    fun addTrustedSender(sender: String) {
+        val updated = _trustedSenderIds.value + sender.uppercase()
+        _trustedSenderIds.value = updated
+        storage.trustedSenderIds = updated
+    }
+
+    fun removeTrustedSender(sender: String) {
+        val updated = _trustedSenderIds.value - sender
+        _trustedSenderIds.value = updated
+        storage.trustedSenderIds = updated
     }
 
     fun sendTestMessage() {

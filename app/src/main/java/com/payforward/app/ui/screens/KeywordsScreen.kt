@@ -10,7 +10,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Key
-import androidx.compose.material3.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -328,6 +330,17 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
     }
 }
 
+fun getSemanticIcon(word: String): ImageVector {
+    val lower = word.lowercase()
+    return when {
+        lower.contains("paytm") || lower.contains("phonepe") || lower.contains("wallet") || lower.contains("gpay") -> Icons.Filled.AccountBalanceWallet
+        lower.contains("neft") || lower.contains("imps") || lower.contains("bank") -> Icons.Filled.AccountBalance
+        lower.contains("upi") || lower.contains("credited") || lower.contains("received") -> Icons.Filled.Payments
+        lower.contains("card") || lower.contains("debit") || lower.contains("credit") -> Icons.Filled.CreditCard
+        else -> Icons.Filled.AutoAwesome
+    }
+}
+
 @Composable
 fun KeywordItem(
     keyword: Keyword,
@@ -335,73 +348,92 @@ fun KeywordItem(
     onDelete: (() -> Unit)?,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
+    val gradientColors = if (keyword.isEnabled) {
+        listOf(
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        )
+    } else {
+        listOf(
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
+        )
+    }
+
     Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (keyword.isEnabled)
-                MaterialTheme.colorScheme.surfaceVariant
-            else
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        border = BorderStroke(
+            0.5.dp, 
+            if (keyword.isEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) 
+            else MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
         )
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(Brush.linearGradient(gradientColors))
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        if (keyword.isDefault)
-                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f)
-                        else
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                    ),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = if (keyword.isDefault) Icons.Filled.Lock else Icons.Filled.Tag,
-                    contentDescription = null,
-                    tint = if (keyword.isDefault) MaterialTheme.colorScheme.tertiary
-                    else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp)
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(
+                            Brush.linearGradient(
+                                if (keyword.isDefault)
+                                    listOf(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f), MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f))
+                                else
+                                    listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = getSemanticIcon(keyword.word),
+                        contentDescription = null,
+                        tint = if (keyword.isDefault) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = keyword.word,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (keyword.isEnabled) MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (keyword.isDefault) "Default System Rule" else "Custom Defined RegEx",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+
+                Switch(
+                    checked = keyword.isEnabled,
+                    onCheckedChange = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onToggle()
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        uncheckedBorderColor = MaterialTheme.colorScheme.outline
+                    )
                 )
             }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = keyword.word,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (keyword.isEnabled) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = if (keyword.isDefault) "Default" else "Custom",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Switch(
-                checked = keyword.isEnabled,
-                onCheckedChange = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    onToggle()
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    uncheckedBorderColor = MaterialTheme.colorScheme.outline
-                )
-            )
         }
     }
 }

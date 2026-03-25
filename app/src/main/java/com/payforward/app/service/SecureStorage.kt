@@ -68,6 +68,15 @@ class SecureStorage(context: Context) {
         get() = regularPrefs.getBoolean(KEY_TERMS_ACCEPTED, false)
         set(value) = regularPrefs.edit().putBoolean(KEY_TERMS_ACCEPTED, value).apply()
 
+    // --- Anti-Spoofing ---
+    var isAntiSpoofingEnabled: Boolean
+        get() = regularPrefs.getBoolean(KEY_ANTI_SPOOFING, false)
+        set(value) = regularPrefs.edit().putBoolean(KEY_ANTI_SPOOFING, value).apply()
+
+    var trustedSenderIds: Set<String>
+        get() = regularPrefs.getStringSet(KEY_TRUSTED_SENDERS, emptySet()) ?: emptySet()
+        set(value) = regularPrefs.edit().putStringSet(KEY_TRUSTED_SENDERS, value).apply()
+
     fun isForwardingConfigured(): Boolean {
         return when (forwardingMethod) {
             ForwardingMethod.WEBHOOK -> webhookUrl.isNotBlank()
@@ -85,6 +94,8 @@ class SecureStorage(context: Context) {
         private const val KEY_SERVICE_ACTIVE = "service_active"
         private const val KEY_THEME_MODE = "theme_mode"
         private const val KEY_TERMS_ACCEPTED = "terms_accepted"
+        private const val KEY_ANTI_SPOOFING = "anti_spoofing_enabled"
+        private const val KEY_TRUSTED_SENDERS = "trusted_senders"
     }
 }
 
