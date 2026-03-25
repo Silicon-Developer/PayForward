@@ -228,10 +228,6 @@ fun FilterChipItem(
             selectedLabelColor = PayForwardColors.NeonBlue,
             containerColor = PayForwardColors.CardDark,
             labelColor = PayForwardColors.TextSecondary
-        ),
-        border = FilterChipDefaults.filterChipBorder(
-            borderColor = PayForwardColors.DarkBorder,
-            selectedBorderColor = PayForwardColors.NeonBlue.copy(alpha = 0.4f)
         )
     )
 }
