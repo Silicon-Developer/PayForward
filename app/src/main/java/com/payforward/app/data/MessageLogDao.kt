@@ -47,4 +47,13 @@ interface MessageLogDao {
 
     @Query("DELETE FROM message_logs")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM message_logs ORDER BY timestamp DESC")
+    fun getAllLogsSync(): List<MessageLog>
+
+    @Query("SELECT COUNT(*) FROM message_logs WHERE timestamp >= :since")
+    suspend fun getCountSince(since: Long): Int
+
+    @Query("SELECT COUNT(*) FROM message_logs WHERE timestamp >= :since AND status = 'SUCCESS'")
+    suspend fun getSuccessCountSince(since: Long): Int
 }

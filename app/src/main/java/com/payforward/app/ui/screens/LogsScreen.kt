@@ -36,171 +36,129 @@ fun LogsScreen(viewModel: LogsViewModel = viewModel()) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val statusFilter by viewModel.statusFilter.collectAsState()
 
-    Scaffold(
-        containerColor = PayForwardColors.DeepBlack,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "Activity Log",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = PayForwardColors.TextPrimary
-                        )
-                        Text(
-                            text = "${logs.size} entries",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = PayForwardColors.TextSecondary
-                        )
-                    }
-                },
-                actions = {
-                    if (logs.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.clearAllLogs() }) {
-                            Icon(
-                                Icons.Outlined.DeleteSweep,
-                                contentDescription = "Clear All",
-                                tint = PayForwardColors.TextSecondary
-                            )
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PayForwardColors.DeepBlack
-                )
-            )
-        }
-    ) { padding ->
-        Column(
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Search bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { viewModel.updateSearchQuery(it) },
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Search bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.updateSearchQuery(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = {
-                    Text(
-                        "Search messages, senders...",
-                        color = PayForwardColors.TextTertiary
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        Icons.Outlined.Search,
-                        contentDescription = null,
-                        tint = PayForwardColors.TextSecondary
-                    )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotBlank()) {
-                        IconButton(onClick = { viewModel.updateSearchQuery("") }) {
-                            Icon(
-                                Icons.Filled.Clear,
-                                contentDescription = "Clear",
-                                tint = PayForwardColors.TextSecondary
-                            )
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PayForwardColors.NeonBlue,
-                    unfocusedBorderColor = PayForwardColors.DarkBorder,
-                    cursorColor = PayForwardColors.NeonBlue,
-                    focusedTextColor = PayForwardColors.TextPrimary,
-                    unfocusedTextColor = PayForwardColors.TextPrimary,
-                    focusedContainerColor = PayForwardColors.CardDark,
-                    unfocusedContainerColor = PayForwardColors.CardDark
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = {
+                Text(
+                    "Search messages, senders...",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            },
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            trailingIcon = {
+                if (searchQuery.isNotBlank()) {
+                    IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                        Icon(
+                            Icons.Filled.Clear,
+                            contentDescription = "Clear",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            singleLine = true,
+            shape = RoundedCornerShape(14.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
             )
+        )
 
-            // Status filter chips
-            LazyRow(
+        // Status filter chips
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                FilterChipItem(
+                    label = "All",
+                    selected = statusFilter == null,
+                    onClick = { viewModel.setStatusFilter(null) }
+                )
+            }
+            item {
+                FilterChipItem(
+                    label = "✅ Success",
+                    selected = statusFilter == ForwardStatus.SUCCESS,
+                    onClick = { viewModel.setStatusFilter(ForwardStatus.SUCCESS) }
+                )
+            }
+            item {
+                FilterChipItem(
+                    label = "❌ Failed",
+                    selected = statusFilter == ForwardStatus.FAILED,
+                    onClick = { viewModel.setStatusFilter(ForwardStatus.FAILED) }
+                )
+            }
+            item {
+                FilterChipItem(
+                    label = "⏳ Pending",
+                    selected = statusFilter == ForwardStatus.PENDING,
+                    onClick = { viewModel.setStatusFilter(ForwardStatus.PENDING) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        if (logs.isEmpty()) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
             ) {
-                item {
-                    FilterChipItem(
-                        label = "All",
-                        selected = statusFilter == null,
-                        onClick = { viewModel.setStatusFilter(null) }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        imageVector = Icons.Outlined.Inbox,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-                item {
-                    FilterChipItem(
-                        label = "✅ Success",
-                        selected = statusFilter == ForwardStatus.SUCCESS,
-                        onClick = { viewModel.setStatusFilter(ForwardStatus.SUCCESS) }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "No activity yet",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-                item {
-                    FilterChipItem(
-                        label = "❌ Failed",
-                        selected = statusFilter == ForwardStatus.FAILED,
-                        onClick = { viewModel.setStatusFilter(ForwardStatus.FAILED) }
-                    )
-                }
-                item {
-                    FilterChipItem(
-                        label = "⏳ Pending",
-                        selected = statusFilter == ForwardStatus.PENDING,
-                        onClick = { viewModel.setStatusFilter(ForwardStatus.PENDING) }
+                    Text(
+                        text = "Intercepted messages will appear here",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            if (logs.isEmpty()) {
-                // Empty state
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Outlined.Inbox,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = PayForwardColors.TextTertiary
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "No activity yet",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = PayForwardColors.TextSecondary
-                        )
-                        Text(
-                            text = "Intercepted messages will appear here",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = PayForwardColors.TextTertiary,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(
-                        items = logs,
-                        key = { it.id }
-                    ) { log ->
-                        LogItem(log = log)
-                    }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(items = logs, key = { it.id }) { log ->
+                    LogItem(log = log)
                 }
             }
         }
@@ -218,16 +176,13 @@ fun FilterChipItem(
         selected = selected,
         onClick = onClick,
         label = {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium
-            )
+            Text(text = label, style = MaterialTheme.typography.labelMedium)
         },
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = PayForwardColors.NeonBlue.copy(alpha = 0.15f),
-            selectedLabelColor = PayForwardColors.NeonBlue,
-            containerColor = PayForwardColors.CardDark,
-            labelColor = PayForwardColors.TextSecondary
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     )
 }
@@ -261,12 +216,10 @@ fun LogItem(log: MessageLog) {
             .animateContentSize()
             .clickable { expanded = !expanded },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = PayForwardColors.CardDark),
-        border = androidx.compose.foundation.BorderStroke(1.dp, PayForwardColors.DarkBorder)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Source icon
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -288,7 +241,7 @@ fun LogItem(log: MessageLog) {
                     Text(
                         text = log.sender,
                         style = MaterialTheme.typography.titleMedium,
-                        color = PayForwardColors.TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontWeight = FontWeight.Medium
@@ -296,7 +249,7 @@ fun LogItem(log: MessageLog) {
                     Text(
                         text = dateFormatter.format(Date(log.timestamp)),
                         style = MaterialTheme.typography.bodySmall,
-                        color = PayForwardColors.TextTertiary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -329,7 +282,7 @@ fun LogItem(log: MessageLog) {
             Text(
                 text = log.body,
                 style = MaterialTheme.typography.bodySmall,
-                color = PayForwardColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = if (expanded) Int.MAX_VALUE else 2,
                 overflow = TextOverflow.Ellipsis,
                 lineHeight = 16.sp
@@ -338,7 +291,7 @@ fun LogItem(log: MessageLog) {
             // Expanded details
             if (expanded) {
                 Spacer(modifier = Modifier.height(10.dp))
-                Divider(color = PayForwardColors.DarkBorder.copy(alpha = 0.5f))
+                Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 Spacer(modifier = Modifier.height(10.dp))
 
                 DetailRow("Matched Keywords", log.matchedKeyword)
@@ -357,13 +310,13 @@ fun LogItem(log: MessageLog) {
                             modifier = Modifier
                                 .padding(end = 6.dp)
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(PayForwardColors.NeonPurple.copy(alpha = 0.1f))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
                                 .padding(horizontal = 8.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = keyword,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = PayForwardColors.NeonPurple
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                     }
@@ -379,14 +332,14 @@ fun DetailRow(label: String, value: String) {
         Text(
             text = "$label:",
             style = MaterialTheme.typography.bodySmall,
-            color = PayForwardColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.width(120.dp)
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodySmall,
-            color = PayForwardColors.TextSecondary
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

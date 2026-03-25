@@ -63,6 +63,12 @@
             </intent-filter>
         </service>
 
+        <!-- Foreground Listener Service -->
+        <service
+            android:name=".service.ListenerForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+
     </application>
 
 </manifest>

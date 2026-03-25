@@ -22,7 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.payforward.app.data.Keyword
-import com.payforward.app.ui.theme.PayForwardColors
 import com.payforward.app.ui.viewmodels.KeywordsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,28 +34,7 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
     var newKeyword by remember { mutableStateOf("") }
 
     Scaffold(
-        containerColor = PayForwardColors.DeepBlack,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "Keywords",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = PayForwardColors.TextPrimary
-                        )
-                        Text(
-                            text = "${keywords.size} trigger words active",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = PayForwardColors.TextSecondary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PayForwardColors.DeepBlack
-                )
-            )
-        },
+        containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -64,8 +42,8 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                     newKeyword = ""
                     viewModel.showAddKeywordDialog()
                 },
-                containerColor = PayForwardColors.NeonBlue,
-                contentColor = PayForwardColors.DeepBlack,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add Keyword")
@@ -73,7 +51,6 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
         }
     ) { padding ->
         if (keywords.isEmpty()) {
-            // Empty state
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -85,18 +62,18 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         imageVector = Icons.Outlined.Key,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = PayForwardColors.TextTertiary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = "No keywords yet",
                         style = MaterialTheme.typography.titleLarge,
-                        color = PayForwardColors.TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "Tap + to add trigger keywords",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = PayForwardColors.TextTertiary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -110,7 +87,6 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(bottom = 88.dp, top = 8.dp)
             ) {
-                // Default keywords section
                 val defaultKeywords = keywords.filter { it.isDefault }
                 val customKeywords = keywords.filter { !it.isDefault }
 
@@ -119,18 +95,15 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         Text(
                             text = "DEFAULT KEYWORDS",
                             style = MaterialTheme.typography.labelMedium,
-                            color = PayForwardColors.TextTertiary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
-                    items(
-                        items = defaultKeywords,
-                        key = { it.id }
-                    ) { keyword ->
+                    items(items = defaultKeywords, key = { it.id }) { keyword ->
                         KeywordItem(
                             keyword = keyword,
                             onToggle = { viewModel.toggleKeyword(keyword) },
-                            onDelete = null, // Can't delete defaults
+                            onDelete = null,
                             haptic = haptic
                         )
                     }
@@ -142,14 +115,11 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         Text(
                             text = "CUSTOM KEYWORDS",
                             style = MaterialTheme.typography.labelMedium,
-                            color = PayForwardColors.TextTertiary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
-                    items(
-                        items = customKeywords,
-                        key = { it.id }
-                    ) { keyword ->
+                    items(items = customKeywords, key = { it.id }) { keyword ->
                         SwipeToDismissKeyword(
                             keyword = keyword,
                             onToggle = { viewModel.toggleKeyword(keyword) },
@@ -169,9 +139,6 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissAddKeywordDialog() },
-            containerColor = PayForwardColors.CardDark,
-            titleContentColor = PayForwardColors.TextPrimary,
-            textContentColor = PayForwardColors.TextSecondary,
             title = {
                 Text(
                     text = "Add Keyword",
@@ -183,7 +150,7 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                     Text(
                         text = "Enter a trigger keyword to match in incoming messages.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = PayForwardColors.TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
@@ -193,13 +160,13 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = PayForwardColors.NeonBlue,
-                            focusedLabelColor = PayForwardColors.NeonBlue,
-                            cursorColor = PayForwardColors.NeonBlue,
-                            unfocusedBorderColor = PayForwardColors.DarkBorder,
-                            unfocusedLabelColor = PayForwardColors.TextSecondary,
-                            focusedTextColor = PayForwardColors.TextPrimary,
-                            unfocusedTextColor = PayForwardColors.TextPrimary
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -210,12 +177,12 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                     onClick = { viewModel.addKeyword(newKeyword) },
                     enabled = newKeyword.isNotBlank()
                 ) {
-                    Text("Add", color = PayForwardColors.NeonBlue)
+                    Text("Add", color = MaterialTheme.colorScheme.primary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissAddKeywordDialog() }) {
-                    Text("Cancel", color = PayForwardColors.TextSecondary)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )
@@ -233,14 +200,9 @@ fun KeywordItem(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (keyword.isEnabled)
-                PayForwardColors.CardDark
+                MaterialTheme.colorScheme.surfaceVariant
             else
-                PayForwardColors.CardDark.copy(alpha = 0.5f)
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (keyword.isEnabled) PayForwardColors.DarkBorder
-            else PayForwardColors.DarkBorder.copy(alpha = 0.3f)
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
     ) {
         Row(
@@ -255,17 +217,17 @@ fun KeywordItem(
                     .clip(RoundedCornerShape(8.dp))
                     .background(
                         if (keyword.isDefault)
-                            PayForwardColors.NeonPurple.copy(alpha = 0.12f)
+                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f)
                         else
-                            PayForwardColors.NeonBlue.copy(alpha = 0.12f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = if (keyword.isDefault) Icons.Filled.Lock else Icons.Filled.Tag,
                     contentDescription = null,
-                    tint = if (keyword.isDefault) PayForwardColors.NeonPurple
-                    else PayForwardColors.NeonBlue,
+                    tint = if (keyword.isDefault) MaterialTheme.colorScheme.tertiary
+                    else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -276,14 +238,14 @@ fun KeywordItem(
                 Text(
                     text = keyword.word,
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (keyword.isEnabled) PayForwardColors.TextPrimary
-                    else PayForwardColors.TextTertiary,
+                    color = if (keyword.isEnabled) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = if (keyword.isDefault) "Default" else "Custom",
                     style = MaterialTheme.typography.bodySmall,
-                    color = PayForwardColors.TextTertiary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -294,11 +256,11 @@ fun KeywordItem(
                     onToggle()
                 },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = PayForwardColors.DeepBlack,
-                    checkedTrackColor = PayForwardColors.NeonGreen,
-                    uncheckedThumbColor = PayForwardColors.TextSecondary,
-                    uncheckedTrackColor = PayForwardColors.CardDark,
-                    uncheckedBorderColor = PayForwardColors.DarkBorder
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
         }
@@ -329,14 +291,14 @@ fun SwipeToDismissKeyword(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(12.dp))
-                    .background(PayForwardColors.ErrorRed.copy(alpha = 0.15f))
+                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.15f))
                     .padding(horizontal = 20.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "Delete",
-                    tint = PayForwardColors.ErrorRed,
+                    tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -352,4 +314,3 @@ fun SwipeToDismissKeyword(
         directions = setOf(DismissDirection.EndToStart)
     )
 }
-

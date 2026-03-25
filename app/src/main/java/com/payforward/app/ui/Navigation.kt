@@ -1,111 +1,146 @@
 package com.payforward.app.ui
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Key
-import androidx.compose.material.icons.outlined.List
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.payforward.app.ui.screens.HomeScreen
-import com.payforward.app.ui.screens.KeywordsScreen
-import com.payforward.app.ui.screens.LogsScreen
-import com.payforward.app.ui.screens.SettingsScreen
-import com.payforward.app.ui.theme.PayForwardColors
+import androidx.compose.ui.text.font.FontWeight
+import com.payforward.app.ui.screens.*
 
-sealed class Screen(
-    val route: String,
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
-) {
-    data object Home : Screen("home", "Home", Icons.Filled.Home, Icons.Outlined.Home)
-    data object Keywords : Screen("keywords", "Keywords", Icons.Filled.Key, Icons.Outlined.Key)
-    data object Logs : Screen("logs", "Logs", Icons.Filled.List, Icons.Outlined.List)
-    data object Settings : Screen("settings", "Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
+enum class Screen(val title: String) {
+    HOME("PayForward"),
+    KEYWORDS("Keywords"),
+    LOGS("Activity Log"),
+    SETTINGS("Settings"),
+    ABOUT("About")
 }
 
-val screens = listOf(Screen.Home, Screen.Keywords, Screen.Logs, Screen.Settings)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Navigation() {
-    val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
+fun PayForwardApp(
+    onExportCsv: () -> Unit = {}
+) {
+    var currentScreen by remember { mutableStateOf(Screen.HOME) }
+    var menuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = PayForwardColors.DeepBlack,
-        bottomBar = {
-            NavigationBar(
-                containerColor = PayForwardColors.DarkSurface,
-                contentColor = PayForwardColors.TextPrimary,
-                tonalElevation = 0.dp
-            ) {
-                screens.forEach { screen ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                                contentDescription = screen.title
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = screen.title,
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        },
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = PayForwardColors.NeonBlue,
-                            selectedTextColor = PayForwardColors.NeonBlue,
-                            unselectedIconColor = PayForwardColors.TextSecondary,
-                            unselectedTextColor = PayForwardColors.TextSecondary,
-                            indicatorColor = PayForwardColors.NeonBlue.copy(alpha = 0.12f)
-                        )
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = currentScreen.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.SemiBold
                     )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
+                actions = {
+                    // Export CSV button only on Logs screen
+                    if (currentScreen == Screen.LOGS) {
+                        IconButton(onClick = onExportCsv) {
+                            Icon(
+                                Icons.Outlined.FileDownload,
+                                contentDescription = "Export CSV",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // 3-dot kebab menu
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Home") },
+                            onClick = {
+                                currentScreen = Screen.HOME
+                                menuExpanded = false
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Home, contentDescription = null)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Keywords") },
+                            onClick = {
+                                currentScreen = Screen.KEYWORDS
+                                menuExpanded = false
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Key, contentDescription = null)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Logs") },
+                            onClick = {
+                                currentScreen = Screen.LOGS
+                                menuExpanded = false
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.History, contentDescription = null)
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Settings") },
+                            onClick = {
+                                currentScreen = Screen.SETTINGS
+                                menuExpanded = false
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Settings, contentDescription = null)
+                            }
+                        )
+                        Divider()
+                        DropdownMenuItem(
+                            text = { Text("About") },
+                            onClick = {
+                                currentScreen = Screen.ABOUT
+                                menuExpanded = false
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Info, contentDescription = null)
+                            }
+                        )
+                    }
                 }
-            }
+            )
         }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding),
-            enterTransition = { fadeIn(initialAlpha = 0.3f) + slideInHorizontally { it / 4 } },
-            exitTransition = { fadeOut(targetAlpha = 0.3f) + slideOutHorizontally { -it / 4 } },
-            popEnterTransition = { fadeIn(initialAlpha = 0.3f) + slideInHorizontally { -it / 4 } },
-            popExitTransition = { fadeOut(targetAlpha = 0.3f) + slideOutHorizontally { it / 4 } }
-        ) {
-            composable(Screen.Home.route) { HomeScreen() }
-            composable(Screen.Keywords.route) { KeywordsScreen() }
-            composable(Screen.Logs.route) { LogsScreen() }
-            composable(Screen.Settings.route) { SettingsScreen() }
+    ) { padding ->
+        AnimatedContent(
+            targetState = currentScreen,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            transitionSpec = {
+                fadeIn() + slideInHorizontally { it / 4 } with
+                fadeOut() + slideOutHorizontally { -it / 4 }
+            },
+            label = "screen_transition"
+        ) { screen ->
+            when (screen) {
+                Screen.HOME -> HomeScreen()
+                Screen.KEYWORDS -> KeywordsScreen()
+                Screen.LOGS -> LogsScreen()
+                Screen.SETTINGS -> SettingsScreen()
+                Screen.ABOUT -> AboutScreen()
+            }
         }
     }
 }

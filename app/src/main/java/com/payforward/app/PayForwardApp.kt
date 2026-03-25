@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 
 class PayForwardApp : Application() {
 
-    val database by lazy { AppDatabase.getDatabase(this) }
+    val database by lazy { AppDatabase.getInstance(this) }
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {

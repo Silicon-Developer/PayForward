@@ -55,6 +55,19 @@ class SecureStorage(context: Context) {
         get() = regularPrefs.getBoolean(KEY_SERVICE_ACTIVE, false)
         set(value) = regularPrefs.edit().putBoolean(KEY_SERVICE_ACTIVE, value).apply()
 
+    // --- Theme Mode ---
+    var themeMode: ThemeMode
+        get() = ThemeMode.valueOf(
+            regularPrefs.getString(KEY_THEME_MODE, ThemeMode.SYSTEM.name)
+                ?: ThemeMode.SYSTEM.name
+        )
+        set(value) = regularPrefs.edit().putString(KEY_THEME_MODE, value.name).apply()
+
+    // --- Terms Accepted ---
+    var termsAccepted: Boolean
+        get() = regularPrefs.getBoolean(KEY_TERMS_ACCEPTED, false)
+        set(value) = regularPrefs.edit().putBoolean(KEY_TERMS_ACCEPTED, value).apply()
+
     fun isForwardingConfigured(): Boolean {
         return when (forwardingMethod) {
             ForwardingMethod.WEBHOOK -> webhookUrl.isNotBlank()
@@ -70,6 +83,8 @@ class SecureStorage(context: Context) {
         private const val KEY_TELEGRAM_CHAT_ID = "telegram_chat_id"
         private const val KEY_SMS_NUMBER = "sms_forwarding_number"
         private const val KEY_SERVICE_ACTIVE = "service_active"
+        private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_TERMS_ACCEPTED = "terms_accepted"
     }
 }
 
@@ -77,4 +92,10 @@ enum class ForwardingMethod {
     WEBHOOK,
     TELEGRAM,
     SMS
+}
+
+enum class ThemeMode {
+    SYSTEM,
+    LIGHT,
+    DARK
 }

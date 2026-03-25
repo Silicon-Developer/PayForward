@@ -1,16 +1,15 @@
 package com.payforward.app.ui.screens
 
 import android.Manifest
-import android.content.Intent
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -24,10 +23,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -35,254 +33,281 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.payforward.app.service.ListenerForegroundService
 import com.payforward.app.ui.theme.PayForwardColors
 import com.payforward.app.ui.viewmodels.HomeViewModel
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
-    val isActive by viewModel.isServiceActive.collectAsState()
+    val isActive by viewModel.isActive.collectAsState()
     val scannedToday by viewModel.scannedToday.collectAsState()
     val forwardedToday by viewModel.forwardedToday.collectAsState()
-
-    val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val context = LocalContext.current
 
-    // Permission launchers
+    // Permission states
+    var smsPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.RECEIVE_SMS)
+                    == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    var notificationListenerEnabled by remember {
+        mutableStateOf(isNotificationListenerEnabled(context))
+    }
+    var showPermissionDialog by remember { mutableStateOf(false) }
+
+    // Permission launcher
     val smsPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> }
+    ) { results ->
+        smsPermissionGranted = results[Manifest.permission.RECEIVE_SMS] == true
+    }
+
+    // Pulsing animation when active
+    val pulseAnim = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by pulseAnim.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
+    // Denied permission banners
+    val deniedPermissions = mutableListOf<String>()
+    if (isActive && !smsPermissionGranted) deniedPermissions.add("SMS Access")
+    if (isActive && !notificationListenerEnabled) deniedPermissions.add("Notification Access")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(PayForwardColors.DeepBlack)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // ── Permission Denial Banners ────────────────
+        deniedPermissions.forEach { perm ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = PayForwardColors.WarningAmber.copy(alpha = 0.12f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.Warning,
+                        contentDescription = null,
+                        tint = PayForwardColors.WarningAmber,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "App can't run properly: $perm denied",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = PayForwardColors.WarningAmber,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── App Title ──────────────────────────────────
-        Text(
-            text = "PayForward",
-            style = MaterialTheme.typography.displayLarge,
-            color = PayForwardColors.TextPrimary
-        )
+        // ── Master Toggle ────────────────────────────
+        val toggleColor = if (isActive) PayForwardColors.NeonGreen else MaterialTheme.colorScheme.onSurfaceVariant
+        val activeMod = if (isActive) Modifier.scale(pulseScale) else Modifier
 
-        Text(
-            text = "Financial Message Intelligence",
-            style = MaterialTheme.typography.bodyMedium,
-            color = PayForwardColors.TextSecondary,
-            modifier = Modifier.padding(top = 4.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(140.dp)
+                .then(activeMod)
+                .shadow(
+                    elevation = if (isActive) 24.dp else 0.dp,
+                    shape = CircleShape,
+                    ambientColor = toggleColor.copy(alpha = 0.4f),
+                    spotColor = toggleColor.copy(alpha = 0.4f)
+                )
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            toggleColor.copy(alpha = 0.15f),
+                            toggleColor.copy(alpha = 0.05f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            IconButton(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    if (!isActive) {
+                        // Check permissions before activating
+                        smsPermissionGranted = ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.RECEIVE_SMS
+                        ) == PackageManager.PERMISSION_GRANTED
+                        notificationListenerEnabled = isNotificationListenerEnabled(context)
 
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // ── Master Toggle ──────────────────────────────
-        MasterToggle(
-            isActive = isActive,
-            onToggle = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                viewModel.toggleService()
+                        if (!smsPermissionGranted) {
+                            smsPermissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.RECEIVE_SMS,
+                                    Manifest.permission.READ_SMS,
+                                    Manifest.permission.SEND_SMS
+                                )
+                            )
+                        }
+                        if (!notificationListenerEnabled) {
+                            showPermissionDialog = true
+                        }
+                        // Activate and start foreground service
+                        viewModel.toggleService()
+                        ListenerForegroundService.start(context)
+                    } else {
+                        viewModel.toggleService()
+                        ListenerForegroundService.stop(context)
+                    }
+                },
+                modifier = Modifier.size(100.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PowerSettingsNew,
+                    contentDescription = "Toggle Service",
+                    modifier = Modifier.size(56.dp),
+                    tint = toggleColor
+                )
             }
-        )
+        }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = if (isActive) "Service Active" else "Service Inactive",
-            style = MaterialTheme.typography.titleMedium,
-            color = if (isActive) PayForwardColors.NeonGreen else PayForwardColors.TextSecondary,
-            fontWeight = FontWeight.SemiBold
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = if (isActive) "Monitoring incoming messages" else "Tap to start listening",
+            text = if (isActive) "SERVICE ACTIVE" else "SERVICE INACTIVE",
+            style = MaterialTheme.typography.labelLarge,
+            color = toggleColor,
+            letterSpacing = 3.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = if (isActive) "Monitoring financial messages"
+            else "Tap power button to start",
             style = MaterialTheme.typography.bodySmall,
-            color = PayForwardColors.TextTertiary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp)
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // ── Stats Cards ────────────────────────────────
+        // ── Stats Cards ──────────────────────────────
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            StatsCard(
+            StatCard(
                 modifier = Modifier.weight(1f),
-                icon = Icons.Outlined.Scanner,
+                icon = Icons.Outlined.Visibility,
                 label = "Scanned Today",
-                value = scannedToday.toString(),
-                accentColor = PayForwardColors.NeonBlue
+                value = "$scannedToday",
+                accentColor = MaterialTheme.colorScheme.primary
             )
-            StatsCard(
+            StatCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Outlined.Send,
                 label = "Forwarded",
-                value = forwardedToday.toString(),
+                value = "$forwardedToday",
                 accentColor = PayForwardColors.NeonGreen
             )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Permission Cards ───────────────────────────
-        Text(
-            text = "PERMISSIONS",
-            style = MaterialTheme.typography.labelMedium,
-            color = PayForwardColors.TextTertiary,
+        // ── Simulate Payment Button ──────────────────
+        OutlinedButton(
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                viewModel.simulatePayment(context)
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 10.dp)
-        )
-
-        PermissionCard(
-            title = "SMS Access",
-            description = "Required to read incoming SMS messages containing transaction details. Messages are processed entirely on your device.",
-            icon = Icons.Outlined.Sms,
-            onClick = {
-                smsPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.RECEIVE_SMS,
-                        Manifest.permission.READ_SMS
-                    )
-                )
-            }
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        PermissionCard(
-            title = "Notification Access",
-            description = "Required to capture transaction notifications from payment apps like GPay, PhonePe, and Paytm.",
-            icon = Icons.Outlined.Notifications,
-            onClick = {
-                val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
-                context.startActivity(intent)
-            }
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Spacer(modifier = Modifier.height(10.dp))
-            PermissionCard(
-                title = "Show Notifications",
-                description = "Required to display status notifications about the forwarding service.",
-                icon = Icons.Outlined.NotificationsActive,
-                onClick = {
-                    smsPermissionLauncher.launch(
-                        arrayOf(Manifest.permission.POST_NOTIFICATIONS)
-                    )
-                }
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+            )
+        ) {
+            Icon(
+                Icons.Outlined.Science,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                "Simulate Payment",
+                style = MaterialTheme.typography.labelLarge
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
     }
-}
 
-// ─── Master Toggle Component ──────────────────────────────────────────────
-@Composable
-fun MasterToggle(isActive: Boolean, onToggle: () -> Unit) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.12f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseScale"
-    )
-
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = EaseInOutCubic),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseAlpha"
-    )
-
-    val bgColor by animateColorAsState(
-        targetValue = if (isActive) PayForwardColors.NeonGreen.copy(alpha = 0.12f)
-        else PayForwardColors.CardDark,
-        animationSpec = tween(500),
-        label = "bgColor"
-    )
-
-    val borderColor by animateColorAsState(
-        targetValue = if (isActive) PayForwardColors.NeonGreen
-        else PayForwardColors.DarkBorder,
-        animationSpec = tween(500),
-        label = "borderColor"
-    )
-
-    val iconColor by animateColorAsState(
-        targetValue = if (isActive) PayForwardColors.NeonGreen
-        else PayForwardColors.TextSecondary,
-        animationSpec = tween(500),
-        label = "iconColor"
-    )
-
-    Box(contentAlignment = Alignment.Center) {
-        // Pulsing glow ring (only when active)
-        if (isActive) {
-            Box(
-                modifier = Modifier
-                    .size((140 * pulseScale).dp)
-                    .clip(CircleShape)
-                    .background(PayForwardColors.NeonGreen.copy(alpha = pulseAlpha))
-            )
-        }
-
-        // Main toggle button
-        Box(
-            modifier = Modifier
-                .size(130.dp)
-                .clip(CircleShape)
-                .background(bgColor)
-                .border(2.dp, borderColor, CircleShape)
-                .clickable { onToggle() },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = if (isActive) Icons.Filled.PowerSettingsNew
-                else Icons.Outlined.PowerSettingsNew,
-                contentDescription = "Toggle Service",
-                modifier = Modifier.size(52.dp),
-                tint = iconColor
-            )
-        }
+    // Notification listener permission dialog
+    if (showPermissionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionDialog = false },
+            title = { Text("Notification Access Required") },
+            text = {
+                Text("PayForward needs notification access to monitor payment app alerts. You'll be taken to system settings to enable it.")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showPermissionDialog = false
+                    val intent = android.content.Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                    context.startActivity(intent)
+                }) {
+                    Text("Open Settings", color = MaterialTheme.colorScheme.primary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionDialog = false }) {
+                    Text("Later", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        )
     }
 }
 
-// ─── Stats Card Component ─────────────────────────────────────────────────
 @Composable
-fun StatsCard(
+fun StatCard(
     modifier: Modifier = Modifier,
-    icon: ImageVector,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,
-    accentColor: Color
+    accentColor: androidx.compose.ui.graphics.Color
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = PayForwardColors.CardDark),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            PayForwardColors.DarkBorder
-        )
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(18.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
@@ -296,97 +321,28 @@ fun StatsCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.headlineLarge,
-                color = PayForwardColors.TextPrimary,
-                fontWeight = FontWeight.ExtraBold
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
-                color = PayForwardColors.TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }
     }
 }
 
-// ─── Permission Card Component ────────────────────────────────────────────
-@Composable
-fun PermissionCard(
-    title: String,
-    description: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = PayForwardColors.CardDark),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            PayForwardColors.DarkBorder
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(PayForwardColors.NeonBlue.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = PayForwardColors.NeonBlue,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = PayForwardColors.TextPrimary
-                )
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = PayForwardColors.TextSecondary,
-                    modifier = Modifier.padding(top = 3.dp),
-                    lineHeight = 16.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Icon(
-                imageVector = Icons.Filled.ChevronRight,
-                contentDescription = "Grant",
-                tint = PayForwardColors.TextTertiary
-            )
-        }
-    }
+private fun isNotificationListenerEnabled(context: android.content.Context): Boolean {
+    val pkgName = context.packageName
+    val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+    return flat != null && flat.contains(pkgName)
 }
-
-private val EaseInOutCubic = CubicBezierEasing(0.645f, 0.045f, 0.355f, 1f)

@@ -1,47 +1,80 @@
 package com.payforward.app.ui.viewmodels
 
 import android.app.Application
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.payforward.app.data.AppDatabase
+import com.payforward.app.data.ForwardStatus
+import com.payforward.app.data.MessageLog
+import com.payforward.app.data.MessageSource
+import com.payforward.app.service.ForwardingManager
+import com.payforward.app.service.KeywordEngine
 import com.payforward.app.service.SecureStorage
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
+    private val db = AppDatabase.getInstance(application)
+    private val storage = SecureStorage(application)
 
-    private val secureStorage = SecureStorage(application)
-    private val messageLogDao = AppDatabase.getDatabase(application).messageLogDao()
+    private val _isActive = MutableStateFlow(storage.isServiceActive)
+    val isActive: StateFlow<Boolean> = _isActive
 
-    private val _isServiceActive = MutableStateFlow(secureStorage.isServiceActive)
-    val isServiceActive: StateFlow<Boolean> = _isServiceActive.asStateFlow()
+    private val _scannedToday = MutableStateFlow(0)
+    val scannedToday: StateFlow<Int> = _scannedToday
 
-    private val startOfDay: Long
-        get() {
-            val cal = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            return cal.timeInMillis
-        }
+    private val _forwardedToday = MutableStateFlow(0)
+    val forwardedToday: StateFlow<Int> = _forwardedToday
 
-    val scannedToday: StateFlow<Int> = messageLogDao.getScannedTodayCount(startOfDay)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    val forwardedToday: StateFlow<Int> = messageLogDao.getForwardedTodayCount(startOfDay)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    fun toggleService() {
-        val newState = !_isServiceActive.value
-        _isServiceActive.value = newState
-        secureStorage.isServiceActive = newState
+    init {
+        loadStats()
     }
 
-    fun setServiceActive(active: Boolean) {
-        _isServiceActive.value = active
-        secureStorage.isServiceActive = active
+    private fun loadStats() {
+        viewModelScope.launch {
+            val today = System.currentTimeMillis() - (24 * 60 * 60 * 1000)
+            _scannedToday.value = db.messageLogDao().getCountSince(today)
+            _forwardedToday.value = db.messageLogDao().getSuccessCountSince(today)
+        }
+    }
+
+    fun toggleService() {
+        _isActive.value = !_isActive.value
+        storage.isServiceActive = _isActive.value
+    }
+
+    fun simulatePayment(context: Context) {
+        viewModelScope.launch {
+            val testBody = "You've received Rs.500.00 via UPI from SILICON DEV (Ref: PAY2025TEST). Balance: Rs.15,230.00"
+            val testSender = "SIM-PAYMENT"
+
+            // Log to database
+            val log = MessageLog(
+                sender = testSender,
+                body = testBody,
+                timestamp = System.currentTimeMillis(),
+                matchedKeyword = "received, UPI",
+                status = ForwardStatus.PENDING,
+                source = MessageSource.SMS,
+                forwardedTo = storage.forwardingMethod.name
+            )
+            db.messageLogDao().insert(log)
+
+            // Try forwarding if configured
+            if (storage.isForwardingConfigured()) {
+                val manager = ForwardingManager(context)
+                val success = manager.forward(testSender, testBody)
+                val updatedLog = log.copy(
+                    status = if (success) ForwardStatus.SUCCESS else ForwardStatus.FAILED
+                )
+                db.messageLogDao().insert(updatedLog)
+            }
+
+            loadStats()
+            Toast.makeText(context, "Test payment simulated!", Toast.LENGTH_SHORT).show()
+        }
     }
 }

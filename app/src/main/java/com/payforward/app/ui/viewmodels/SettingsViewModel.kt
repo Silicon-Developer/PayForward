@@ -6,81 +6,87 @@ import androidx.lifecycle.viewModelScope
 import com.payforward.app.service.ForwardingManager
 import com.payforward.app.service.ForwardingMethod
 import com.payforward.app.service.SecureStorage
-import kotlinx.coroutines.flow.*
+import com.payforward.app.service.ThemeMode
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+enum class TestResult { SUCCESS, FAILURE }
+
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+    private val storage = SecureStorage(application)
 
-    private val secureStorage = SecureStorage(application)
-    private val forwardingManager = ForwardingManager(application)
+    private val _forwardingMethod = MutableStateFlow(storage.forwardingMethod)
+    val forwardingMethod: StateFlow<ForwardingMethod> = _forwardingMethod
 
-    private val _forwardingMethod = MutableStateFlow(secureStorage.forwardingMethod)
-    val forwardingMethod: StateFlow<ForwardingMethod> = _forwardingMethod.asStateFlow()
+    private val _webhookUrl = MutableStateFlow(storage.webhookUrl)
+    val webhookUrl: StateFlow<String> = _webhookUrl
 
-    private val _webhookUrl = MutableStateFlow(secureStorage.webhookUrl)
-    val webhookUrl: StateFlow<String> = _webhookUrl.asStateFlow()
+    private val _telegramToken = MutableStateFlow(storage.telegramBotToken)
+    val telegramToken: StateFlow<String> = _telegramToken
 
-    private val _telegramToken = MutableStateFlow(secureStorage.telegramBotToken)
-    val telegramToken: StateFlow<String> = _telegramToken.asStateFlow()
+    private val _telegramChatId = MutableStateFlow(storage.telegramChatId)
+    val telegramChatId: StateFlow<String> = _telegramChatId
 
-    private val _telegramChatId = MutableStateFlow(secureStorage.telegramChatId)
-    val telegramChatId: StateFlow<String> = _telegramChatId.asStateFlow()
-
-    private val _smsNumber = MutableStateFlow(secureStorage.smsForwardingNumber)
-    val smsNumber: StateFlow<String> = _smsNumber.asStateFlow()
-
-    private val _testResult = MutableStateFlow<TestResult?>(null)
-    val testResult: StateFlow<TestResult?> = _testResult.asStateFlow()
+    private val _smsNumber = MutableStateFlow(storage.smsForwardingNumber)
+    val smsNumber: StateFlow<String> = _smsNumber
 
     private val _isTesting = MutableStateFlow(false)
-    val isTesting: StateFlow<Boolean> = _isTesting.asStateFlow()
+    val isTesting: StateFlow<Boolean> = _isTesting
+
+    private val _testResult = MutableStateFlow<TestResult?>(null)
+    val testResult: StateFlow<TestResult?> = _testResult
+
+    private val _themeMode = MutableStateFlow(storage.themeMode)
+    val themeMode: StateFlow<ThemeMode> = _themeMode
 
     fun setForwardingMethod(method: ForwardingMethod) {
         _forwardingMethod.value = method
-        secureStorage.forwardingMethod = method
+        storage.forwardingMethod = method
     }
 
     fun setWebhookUrl(url: String) {
         _webhookUrl.value = url
-        secureStorage.webhookUrl = url
+        storage.webhookUrl = url
     }
 
     fun setTelegramToken(token: String) {
         _telegramToken.value = token
-        secureStorage.telegramBotToken = token
+        storage.telegramBotToken = token
     }
 
     fun setTelegramChatId(chatId: String) {
         _telegramChatId.value = chatId
-        secureStorage.telegramChatId = chatId
+        storage.telegramChatId = chatId
     }
 
     fun setSmsNumber(number: String) {
         _smsNumber.value = number
-        secureStorage.smsForwardingNumber = number
+        storage.smsForwardingNumber = number
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        _themeMode.value = mode
+        storage.themeMode = mode
     }
 
     fun sendTestMessage() {
         viewModelScope.launch {
             _isTesting.value = true
             _testResult.value = null
+
             try {
-                val success = forwardingManager.sendTestMessage()
-                _testResult.value = if (success) TestResult.SUCCESS else TestResult.FAILED
+                val manager = ForwardingManager(getApplication())
+                val success = manager.forward(
+                    sender = "PayForward-Test",
+                    body = "✅ This is a test message from PayForward. If you see this, forwarding is working correctly!"
+                )
+                _testResult.value = if (success) TestResult.SUCCESS else TestResult.FAILURE
             } catch (e: Exception) {
-                _testResult.value = TestResult.FAILED
-            } finally {
-                _isTesting.value = false
+                _testResult.value = TestResult.FAILURE
             }
+
+            _isTesting.value = false
         }
     }
-
-    fun clearTestResult() {
-        _testResult.value = null
-    }
-}
-
-enum class TestResult {
-    SUCCESS,
-    FAILED
 }
