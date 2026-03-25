@@ -192,7 +192,7 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
-                        HorizontalDivider()
+                        Divider()
                         Spacer(modifier = Modifier.height(32.dp))
 
                         Text(
