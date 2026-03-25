@@ -229,10 +229,9 @@ fun FilterChipItem(
             containerColor = PayForwardColors.CardDark,
             labelColor = PayForwardColors.TextSecondary
         ),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (selected) PayForwardColors.NeonBlue.copy(alpha = 0.4f)
-            else PayForwardColors.DarkBorder
+        border = FilterChipDefaults.filterChipBorder(
+            borderColor = PayForwardColors.DarkBorder,
+            selectedBorderColor = PayForwardColors.NeonBlue.copy(alpha = 0.4f)
         )
     )
 }
