@@ -77,10 +77,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
             try {
                 val manager = ForwardingManager(getApplication())
-                val success = manager.forward(
-                    sender = "PayForward-Test",
-                    body = "✅ This is a test message from PayForward. If you see this, forwarding is working correctly!"
-                )
+                val success = manager.sendTestMessage()
                 _testResult.value = if (success) TestResult.SUCCESS else TestResult.FAILURE
             } catch (e: Exception) {
                 _testResult.value = TestResult.FAILURE

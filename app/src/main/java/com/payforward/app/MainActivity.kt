@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun exportLogsCsv() {
-        val db = AppDatabase.getInstance(this)
+        val db = AppDatabase.getDatabase(this)
         val context = this
 
         kotlinx.coroutines.MainScope().launch(Dispatchers.IO) {
@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 file.bufferedWriter().use { writer ->
                     writer.write("ID,Sender,Body,Timestamp,Status,Source,Matched Keyword,Forwarded To")
                     writer.newLine()
-                    logs.forEach { log ->
+                    for (log in logs) {
                         val ts = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                             .format(Date(log.timestamp))
                         val escapedBody = "\"${log.body.replace("\"", "\"\"")}\""

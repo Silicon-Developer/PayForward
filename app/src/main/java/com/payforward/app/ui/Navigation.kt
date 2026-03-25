@@ -19,7 +19,7 @@ enum class Screen(val title: String) {
     ABOUT("About")
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun PayForwardApp(
     onExportCsv: () -> Unit = {}

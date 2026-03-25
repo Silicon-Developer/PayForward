@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val db = AppDatabase.getInstance(application)
+    private val db = AppDatabase.getDatabase(application)
     private val storage = SecureStorage(application)
 
     private val _isActive = MutableStateFlow(storage.isServiceActive)
@@ -66,7 +66,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             // Try forwarding if configured
             if (storage.isForwardingConfigured()) {
                 val manager = ForwardingManager(context)
-                val success = manager.forward(testSender, testBody)
+                val success = manager.sendTestMessage()
                 val updatedLog = log.copy(
                     status = if (success) ForwardStatus.SUCCESS else ForwardStatus.FAILED
                 )
