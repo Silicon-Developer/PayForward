@@ -1,3 +1,5 @@
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+
 pluginManagement {
     repositories {
         google()
@@ -6,7 +8,7 @@ pluginManagement {
     }
 }
 
-dependencyResolution {
+dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
