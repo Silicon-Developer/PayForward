@@ -404,7 +404,7 @@ fun AntiGravityCoreButton(isActive: Boolean, onClick: () -> Unit) {
                     color = coreColor.copy(alpha = 0.6f),
                     style = androidx.compose.ui.graphics.drawscope.Stroke(
                         width = 4.dp.toPx(),
-                        pathEffect = androidx.compose.ui.graphics.PathEffect.dashPath(floatArrayOf(10f, 20f), rotation)
+                        pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 20f), rotation)
                     )
                 )
             }
@@ -458,7 +458,7 @@ fun DataStreamConnector() {
             start = Offset(size.width / 2, 0f),
             end = Offset(size.width / 2, size.height),
             strokeWidth = 4.dp.toPx(),
-            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPath(floatArrayOf(10f, 10f), streamOffset)
+            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 10f), streamOffset)
         )
     }
 }
