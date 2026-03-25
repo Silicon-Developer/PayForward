@@ -135,57 +135,196 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
         }
     }
 
-    // Add keyword dialog
+    // Add keyword dialog / Regex Generator
     if (showAddDialog) {
-        AlertDialog(
+        androidx.compose.ui.window.Dialog(
             onDismissRequest = { viewModel.dismissAddKeywordDialog() },
-            title = {
-                Text(
-                    text = "Add Keyword",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            },
-            text = {
-                Column {
-                    Text(
-                        text = "Enter a trigger keyword to match in incoming messages.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = newKeyword,
-                        onValueChange = { newKeyword = it },
-                        label = { Text("Keyword") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary,
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { viewModel.addKeyword(newKeyword) },
-                    enabled = newKeyword.isNotBlank()
+            properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .fillMaxHeight(0.85f)
+                    .clip(RoundedCornerShape(24.dp)),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Text("Add", color = MaterialTheme.colorScheme.primary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.dismissAddKeywordDialog() }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    // Header
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                            .padding(20.dp)
+                    ) {
+                        Text(
+                            text = "Keyword & Regex Engine",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                            .padding(20.dp)
+                    ) {
+                        Text(
+                            text = "MANUAL ENTRY",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = newKeyword,
+                            onValueChange = { newKeyword = it },
+                            label = { Text("Trigger Keyword or Regex") },
+                            placeholder = { Text("e.g. UPI, Paytm, or \\bRs\\.\\s*\\d+") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Divider()
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Text(
+                            text = "REGEX AUTO-GENERATOR",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Paste a sample notification/SMS below, then click the words you want to trigger on.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        var dummySms by remember { mutableStateOf("") }
+                        var selectedWordIndices by remember { mutableStateOf(setOf<Int>()) }
+                        
+                        OutlinedTextField(
+                            value = dummySms,
+                            onValueChange = { 
+                                dummySms = it
+                                selectedWordIndices = emptySet()
+                            },
+                            label = { Text("Paste Dummy SMS Here") },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        if (dummySms.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Tap words to select:",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            val words = dummySms.split(Regex("\\s+")).filter { it.isNotBlank() }
+                            
+                            // FlowRow for clickable words
+                            @OptIn(ExperimentalLayoutApi::class)
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                words.forEachIndexed { index, word ->
+                                    val isSelected = selectedWordIndices.contains(index)
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(
+                                                if (isSelected) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                            .clickable {
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                selectedWordIndices = if (isSelected) selectedWordIndices - index else selectedWordIndices + index
+                                            }
+                                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            text = word,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (selectedWordIndices.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                // Auto-gen Regex
+                                val selectedWords = selectedWordIndices.sorted().map { words[it] }
+                                // Escape regex chars and join with \s+ for flexible matching
+                                val regexPattern = selectedWords.joinToString("\\s+") { Regex.escape(it) }
+                                
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(containerColor = com.payforward.app.ui.theme.PayForwardColors.BrandSecondary.copy(alpha = 0.1f))
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            text = "Generated Pattern:",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = com.payforward.app.ui.theme.PayForwardColors.BrandSecondary
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = regexPattern,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Button(
+                                            onClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                newKeyword = regexPattern
+                                            },
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                        ) {
+                                            Text("Use This Pattern")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Bottom Actions
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { viewModel.dismissAddKeywordDialog() }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = { viewModel.addKeyword(newKeyword) },
+                            enabled = newKeyword.isNotBlank()
+                        ) {
+                            Text("Save Target")
+                        }
+                    }
                 }
             }
-        )
+        }
     }
 }
 

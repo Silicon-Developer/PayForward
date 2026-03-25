@@ -79,213 +79,16 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
             }
         }
 
+        // ── Security Info Link ────────────────────────────
         Spacer(modifier = Modifier.height(24.dp))
-
-        // ── Forwarding Method ──────────────────────────
+        
         Text(
-            text = "FORWARDING METHOD",
+            text = "SYSTEM INFO",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 10.dp)
         )
 
-        ForwardingMethodCard(
-            title = "Webhook",
-            description = "Send JSON payload via HTTP POST",
-            icon = Icons.Outlined.Webhook,
-            selected = forwardingMethod == ForwardingMethod.WEBHOOK,
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                viewModel.setForwardingMethod(ForwardingMethod.WEBHOOK)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ForwardingMethodCard(
-            title = "Telegram Bot",
-            description = "Forward via Telegram Bot API",
-            icon = Icons.Outlined.Send,
-            selected = forwardingMethod == ForwardingMethod.TELEGRAM,
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                viewModel.setForwardingMethod(ForwardingMethod.TELEGRAM)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ForwardingMethodCard(
-            title = "SMS Forward",
-            description = "Forward as SMS to another number",
-            icon = Icons.Outlined.Sms,
-            selected = forwardingMethod == ForwardingMethod.SMS,
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                viewModel.setForwardingMethod(ForwardingMethod.SMS)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // ── Configuration Fields ───────────────────────
-        Text(
-            text = "CONFIGURATION",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 10.dp)
-        )
-
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                AnimatedVisibility(
-                    visible = forwardingMethod == ForwardingMethod.WEBHOOK,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    Column {
-                        SecureTextField(
-                            value = webhookUrl,
-                            onValueChange = { viewModel.setWebhookUrl(it) },
-                            label = "Webhook URL",
-                            placeholder = "https://your-webhook.example.com/endpoint",
-                            icon = Icons.Outlined.Link,
-                            isSecret = false
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = forwardingMethod == ForwardingMethod.TELEGRAM,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    Column {
-                        SecureTextField(
-                            value = telegramToken,
-                            onValueChange = { viewModel.setTelegramToken(it) },
-                            label = "Bot Token",
-                            placeholder = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11",
-                            icon = Icons.Outlined.Key,
-                            isSecret = true
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
-                        SecureTextField(
-                            value = telegramChatId,
-                            onValueChange = { viewModel.setTelegramChatId(it) },
-                            label = "Chat ID",
-                            placeholder = "-1001234567890",
-                            icon = Icons.Outlined.Chat,
-                            isSecret = false
-                        )
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = forwardingMethod == ForwardingMethod.SMS,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    Column {
-                        SecureTextField(
-                            value = smsNumber,
-                            onValueChange = { viewModel.setSmsNumber(it) },
-                            label = "Phone Number",
-                            placeholder = "+91 98765 43210",
-                            icon = Icons.Outlined.Phone,
-                            isSecret = false
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // ── Test Button ────────────────────────────────
-        Button(
-            onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                viewModel.sendTestMessage()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ),
-            enabled = !isTesting
-        ) {
-            if (isTesting) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Sending Test...")
-            } else {
-                Icon(Icons.Outlined.Science, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Send Test Message", style = MaterialTheme.typography.labelLarge)
-            }
-        }
-
-        // Test result
-        AnimatedVisibility(
-            visible = testResult != null,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            val isSuccess = testResult == TestResult.SUCCESS
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 10.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isSuccess)
-                        MaterialTheme.colorScheme.secondaryContainer
-                    else MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (isSuccess) Icons.Filled.CheckCircle else Icons.Filled.Error,
-                        contentDescription = null,
-                        tint = if (isSuccess) MaterialTheme.colorScheme.onSecondaryContainer
-                        else MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = if (isSuccess) "Test message sent successfully!"
-                        else "Failed to send. Check your configuration.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isSuccess) MaterialTheme.colorScheme.onSecondaryContainer
-                        else MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // ── Security Notice ────────────────────────────
         Card(
             shape = RoundedCornerShape(14.dp),
             colors = CardDefaults.cardColors(
@@ -307,16 +110,14 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Privacy & Security",
+                        text = "Forwarding & Security Hub",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.secondary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "All credentials are stored using AES-256 encryption on your device. " +
-                                "Messages are processed locally and only sent to your configured destination. " +
-                                "No data is shared with third parties.",
+                        text = "API Keys, Webhook URLs, and the Anti-Spoofing Checker have been moved to the dedicated 'Security Hub' in the side menu.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 18.sp

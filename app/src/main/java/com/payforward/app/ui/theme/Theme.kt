@@ -17,42 +17,53 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.payforward.app.service.ThemeMode
 
-// ── Color Palette ──────────────────────────────────────────────────────
 object PayForwardColors {
-    // Neon accents
-    val NeonBlue = Color(0xFF00D4FF)
-    val NeonGreen = Color(0xFF00FF88)
-    val NeonPurple = Color(0xFFBB86FC)
-    val NeonPink = Color(0xFFFF0080)
-    val NeonOrange = Color(0xFFFF6B35)
+    // Pro Vibrant Brand Colors
+    val BrandPrimary = Color(0xFF0052FF)     // Deep trust blue
+    val BrandSecondary = Color(0xFF00D4FF)   // Cyan pop
+    val BrandTertiary = Color(0xFF8A2BE2)    // Premium purple
+    
+    // Anti-Gravity Core Effects
+    val EnergyGreen = Color(0xFF00FFAA)      // Luminous, pure gravity core green
+    val EnergyPulse = Color(0xFF00FF88)      // Core pulse
+    
+    // Premium Light Surface
+    val LightBackground = Color(0xFFF7F8F9)  // Textured off-white
+    val LightSurface = Color(0xFFFFFFFF)     // Clean white
+    val LightCard = Color(0xFFF3F5F7)        // Slightly darker for contrast
+    val LightGlass = Color(0xB3FFFFFF)       // 70% glassmorphism
+    val LightBorder = Color(0xFFE8ECEF)      // Subtle structure
+    
+    // Premium Dark Surface
+    val DeepBlack = Color(0xFF08080C)        // Total void
+    val DarkSurface = Color(0xFF0F0F16)      // Base structure
+    val CardDark = Color(0xFF16161F)         // Elevated core
+    val CardDarkElevated = Color(0xFF1D1D28) 
+    val DarkGlass = Color(0x6616161F)        // 40% glassmorphism
+    val DarkBorder = Color(0xFF232332)       // Defined edges
 
-    // Dark surfaces
-    val DeepBlack = Color(0xFF0A0A0F)
-    val DarkSurface = Color(0xFF12121A)
-    val CardDark = Color(0xFF1A1A2E)
-    val CardDarkElevated = Color(0xFF1F1F35)
-    val DarkBorder = Color(0xFF2A2A3E)
+    // Status
+    val StatusSuccess = Color(0xFF00E676)
+    val StatusError = Color(0xFFFF453A)
+    val StatusWarning = Color(0xFFFF9F0A)
+    val StatusInfo = Color(0xFF0A84FF)
+    
+    // Data Ticker
+    val DataTickerBgLight = Color(0xFFE4E8EB)
+    val DataTickerBgDark = Color(0xFF1B1B26)
 
-    // Light surfaces
-    val LightBackground = Color(0xFFF5F5FA)
-    val LightSurface = Color(0xFFFFFFFF)
-    val LightCard = Color(0xFFF0F0F8)
-    val LightBorder = Color(0xFFD8D8E8)
-
-    // Status colors
-    val SuccessGreen = Color(0xFF00E676)
-    val ErrorRed = Color(0xFFFF5252)
-    val WarningAmber = Color(0xFFFFAB00)
-    val PendingBlue = Color(0xFF448AFF)
-
-    // Text
-    val TextPrimary = Color(0xFFE8E8F0)
-    val TextSecondary = Color(0xFF8888AA)
-    val TextTertiary = Color(0xFF555577)
-    val TextPrimaryLight = Color(0xFF1A1A2E)
-    val TextSecondaryLight = Color(0xFF555577)
-    val TextTertiaryLight = Color(0xFF8888AA)
+    // Text - Light Mode
+    val TextPrimaryLight = Color(0xFF11141A) // Near black
+    val TextSecondaryLight = Color(0xFF5E6573) // Professional gray
+    val TextTertiaryLight = Color(0xFF8A93A5)
+    
+    // Text - Dark Mode
+    val TextPrimaryDark = Color(0xFFF1F3F5)  // Sharp white
+    val TextSecondaryDark = Color(0xFF9098A9)  // Distinct gray
+    val TextTertiaryDark = Color(0xFF6A7285)
 }
+
+
 
 // ── Typography ─────────────────────────────────────────────────────────
 val googleFontProvider = GoogleFont.Provider(
@@ -88,39 +99,39 @@ val PayForwardTypography = Typography(
 
 // ── Dark Color Scheme ──────────────────────────────────────────────────
 private val DarkColorScheme = darkColorScheme(
-    primary = PayForwardColors.NeonBlue,
+    primary = PayForwardColors.BrandSecondary,
     onPrimary = PayForwardColors.DeepBlack,
-    primaryContainer = PayForwardColors.NeonBlue.copy(alpha = 0.15f),
-    onPrimaryContainer = PayForwardColors.NeonBlue,
-    secondary = PayForwardColors.NeonGreen,
+    primaryContainer = PayForwardColors.BrandSecondary.copy(alpha = 0.15f),
+    onPrimaryContainer = PayForwardColors.BrandSecondary,
+    secondary = PayForwardColors.EnergyGreen,
     onSecondary = PayForwardColors.DeepBlack,
-    secondaryContainer = PayForwardColors.NeonGreen.copy(alpha = 0.15f),
-    onSecondaryContainer = PayForwardColors.NeonGreen,
-    tertiary = PayForwardColors.NeonPurple,
-    onTertiary = PayForwardColors.DeepBlack,
+    secondaryContainer = PayForwardColors.EnergyGreen.copy(alpha = 0.15f),
+    onSecondaryContainer = PayForwardColors.EnergyGreen,
+    tertiary = PayForwardColors.BrandTertiary,
+    onTertiary = Color.White,
     background = PayForwardColors.DeepBlack,
-    onBackground = PayForwardColors.TextPrimary,
+    onBackground = PayForwardColors.TextPrimaryDark,
     surface = PayForwardColors.DarkSurface,
-    onSurface = PayForwardColors.TextPrimary,
+    onSurface = PayForwardColors.TextPrimaryDark,
     surfaceVariant = PayForwardColors.CardDark,
-    onSurfaceVariant = PayForwardColors.TextSecondary,
-    error = PayForwardColors.ErrorRed,
+    onSurfaceVariant = PayForwardColors.TextSecondaryDark,
+    error = PayForwardColors.StatusError,
     onError = Color.White,
     outline = PayForwardColors.DarkBorder,
-    outlineVariant = PayForwardColors.DarkBorder.copy(alpha = 0.5f),
+    outlineVariant = PayForwardColors.DarkGlass,
 )
 
 // ── Light Color Scheme ─────────────────────────────────────────────────
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF0077CC),
+    primary = PayForwardColors.BrandPrimary,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD4EAFF),
-    onPrimaryContainer = Color(0xFF003366),
-    secondary = Color(0xFF00875A),
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFCCF5E0),
-    onSecondaryContainer = Color(0xFF003D25),
-    tertiary = Color(0xFF7C4DFF),
+    primaryContainer = PayForwardColors.BrandPrimary.copy(alpha = 0.15f),
+    onPrimaryContainer = PayForwardColors.BrandPrimary,
+    secondary = PayForwardColors.EnergyGreen,
+    onSecondary = PayForwardColors.DeepBlack,
+    secondaryContainer = PayForwardColors.EnergyGreen.copy(alpha = 0.2f),
+    onSecondaryContainer = PayForwardColors.DeepBlack,
+    tertiary = PayForwardColors.BrandTertiary,
     onTertiary = Color.White,
     background = PayForwardColors.LightBackground,
     onBackground = PayForwardColors.TextPrimaryLight,
@@ -128,10 +139,10 @@ private val LightColorScheme = lightColorScheme(
     onSurface = PayForwardColors.TextPrimaryLight,
     surfaceVariant = PayForwardColors.LightCard,
     onSurfaceVariant = PayForwardColors.TextSecondaryLight,
-    error = Color(0xFFD32F2F),
+    error = PayForwardColors.StatusError,
     onError = Color.White,
     outline = PayForwardColors.LightBorder,
-    outlineVariant = PayForwardColors.LightBorder.copy(alpha = 0.5f),
+    outlineVariant = PayForwardColors.LightGlass,
 )
 
 // ── Theme Composable ───────────────────────────────────────────────────

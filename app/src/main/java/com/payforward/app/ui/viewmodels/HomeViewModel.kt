@@ -14,6 +14,9 @@ import com.payforward.app.service.KeywordEngine
 import com.payforward.app.service.SecureStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
@@ -22,6 +25,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _isActive = MutableStateFlow(storage.isServiceActive)
     val isActive: StateFlow<Boolean> = _isActive
+
+    val recentLogs: StateFlow<List<MessageLog>> = db.messageLogDao().getAll()
+        .map { it.take(3) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val activeKeywords: StateFlow<List<com.payforward.app.data.Keyword>> = db.keywordDao().getAllEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _scannedToday = MutableStateFlow(0)
     val scannedToday: StateFlow<Int> = _scannedToday
