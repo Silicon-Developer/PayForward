@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PayForward</string>
+    <string name="notification_listener_label">PayForward Notification Listener</string>
+
+    <!-- Permission Rationales -->
+    <string name="sms_permission_rationale">PayForward needs SMS access to read incoming transaction messages. All processing happens locally on your device — no message data is sent anywhere except your configured forwarding destination.</string>
+    <string name="notification_permission_rationale">PayForward needs notification access to capture transaction alerts from payment apps like GPay, PhonePe, and Paytm. Only notification content matching your keywords is processed.</string>
+
+    <!-- Home Screen -->
+    <string name="service_active">Service Active</string>
+    <string name="service_inactive">Service Inactive</string>
+    <string name="scanned_today">Scanned Today</string>
+    <string name="forwarded_today">Successfully Forwarded</string>
+    <string name="toggle_service">Toggle Listening Service</string>
+
+    <!-- Keywords Screen -->
+    <string name="add_keyword">Add Keyword</string>
+    <string name="keyword_hint">Enter a trigger keyword</string>
+    <string name="default_keywords">Default Keywords</string>
+    <string name="custom_keywords">Custom Keywords</string>
+    <string name="delete_keyword">Delete Keyword</string>
+
+    <!-- Logs Screen -->
+    <string name="activity_log">Activity Log</string>
+    <string name="search_messages">Search messages, senders…</string>
+    <string name="no_activity">No activity yet</string>
+    <string name="clear_all">Clear All Logs</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">Settings</string>
+    <string name="forwarding_method">Forwarding Method</string>
+    <string name="webhook">Webhook</string>
+    <string name="telegram_bot">Telegram Bot</string>
+    <string name="sms_forward">SMS Forward</string>
+    <string name="send_test">Send Test Message</string>
+    <string name="test_success">Test message sent successfully!</string>
+    <string name="test_failed">Failed to send. Check your configuration.</string>
+
+    <!-- Security -->
+    <string name="security_title">Privacy &amp; Security</string>
+    <string name="security_description">All credentials are stored using AES-256 encryption on your device. Messages are processed locally and only sent to your configured destination. No data is shared with third parties.</string>
+</resources>
