@@ -1,22 +1,23 @@
 package com.payforward.app.ui.screens
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Key
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -24,9 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.payforward.app.data.Keyword
+import com.payforward.app.ui.theme.PayForwardColors
 import com.payforward.app.ui.viewmodels.KeywordsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
     val keywords by viewModel.keywords.collectAsState()
@@ -190,7 +192,7 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
-                        Divider()
+                        HorizontalDivider()
                         Spacer(modifier = Modifier.height(32.dp))
 
                         Text(
@@ -217,7 +219,9 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                                 selectedWordIndices = emptySet()
                             },
                             label = { Text("Paste Dummy SMS Here") },
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 100.dp),
                             shape = RoundedCornerShape(12.dp)
                         )
 
@@ -233,7 +237,6 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                             val words = dummySms.split(Regex("\\s+")).filter { it.isNotBlank() }
                             
                             // FlowRow for clickable words
-                            @OptIn(ExperimentalLayoutApi::class)
                             FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -250,7 +253,11 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                                             )
                                             .clickable {
                                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                                selectedWordIndices = if (isSelected) selectedWordIndices - index else selectedWordIndices + index
+                                                selectedWordIndices = if (isSelected) {
+                                                    selectedWordIndices - index 
+                                                } else {
+                                                    selectedWordIndices + index
+                                                }
                                             }
                                             .padding(horizontal = 10.dp, vertical = 6.dp)
                                     ) {
@@ -273,13 +280,13 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                                 
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(containerColor = com.payforward.app.ui.theme.PayForwardColors.BrandSecondary.copy(alpha = 0.1f))
+                                    colors = CardDefaults.cardColors(containerColor = PayForwardColors.BrandSecondary.copy(alpha = 0.1f))
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(
                                             text = "Generated Pattern:",
                                             style = MaterialTheme.typography.labelSmall,
-                                            color = com.payforward.app.ui.theme.PayForwardColors.BrandSecondary
+                                            color = PayForwardColors.BrandSecondary
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
