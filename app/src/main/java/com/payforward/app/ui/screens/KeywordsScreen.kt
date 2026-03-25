@@ -313,18 +313,18 @@ fun SwipeToDismissKeyword(
     onDelete: () -> Unit,
     haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
+    val dismissState = rememberDismissState(
         confirmValueChange = {
-            if (it == SwipeToDismissBoxValue.EndToStart) {
+            if (it == DismissValue.DismissedToStart) {
                 onDelete()
                 true
             } else false
         }
     )
 
-    SwipeToDismissBox(
+    SwipeToDismiss(
         state = dismissState,
-        backgroundContent = {
+        background = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -341,13 +341,15 @@ fun SwipeToDismissKeyword(
                 )
             }
         },
-        enableDismissFromStartToEnd = false
-    ) {
-        KeywordItem(
-            keyword = keyword,
-            onToggle = onToggle,
-            onDelete = onDelete,
-            haptic = haptic
-        )
-    }
+        dismissContent = {
+            KeywordItem(
+                keyword = keyword,
+                onToggle = onToggle,
+                onDelete = onDelete,
+                haptic = haptic
+            )
+        },
+        directions = setOf(DismissDirection.EndToStart)
+    )
 }
+

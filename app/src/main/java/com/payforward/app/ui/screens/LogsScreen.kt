@@ -207,6 +207,7 @@ fun LogsScreen(viewModel: LogsViewModel = viewModel()) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterChipItem(
     label: String,
@@ -228,11 +229,10 @@ fun FilterChipItem(
             containerColor = PayForwardColors.CardDark,
             labelColor = PayForwardColors.TextSecondary
         ),
-        border = FilterChipDefaults.filterChipBorder(
-            borderColor = PayForwardColors.DarkBorder,
-            selectedBorderColor = PayForwardColors.NeonBlue.copy(alpha = 0.4f),
-            enabled = true,
-            selected = selected
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (selected) PayForwardColors.NeonBlue.copy(alpha = 0.4f)
+            else PayForwardColors.DarkBorder
         )
     )
 }
@@ -343,7 +343,7 @@ fun LogItem(log: MessageLog) {
             // Expanded details
             if (expanded) {
                 Spacer(modifier = Modifier.height(10.dp))
-                HorizontalDivider(color = PayForwardColors.DarkBorder.copy(alpha = 0.5f))
+                Divider(color = PayForwardColors.DarkBorder.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(10.dp))
 
                 DetailRow("Matched Keywords", log.matchedKeyword)
