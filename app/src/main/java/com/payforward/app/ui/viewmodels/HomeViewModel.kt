@@ -30,7 +30,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         .map { it.take(3) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val activeKeywords: StateFlow<List<com.payforward.app.data.Keyword>> = db.keywordDao().getAllEnabled()
+    val activeKeywords: StateFlow<List<com.payforward.app.data.Keyword>> = db.keywordDao().getEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _scannedToday = MutableStateFlow(0)

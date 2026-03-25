@@ -192,9 +192,9 @@ fun LogItem(log: MessageLog) {
     var expanded by remember { mutableStateOf(false) }
 
     val statusColor = when (log.status) {
-        ForwardStatus.SUCCESS -> PayForwardColors.SuccessGreen
-        ForwardStatus.FAILED -> PayForwardColors.ErrorRed
-        ForwardStatus.PENDING -> PayForwardColors.PendingBlue
+        ForwardStatus.SUCCESS -> PayForwardColors.StatusSuccess
+        ForwardStatus.FAILED -> PayForwardColors.StatusError
+        ForwardStatus.PENDING -> PayForwardColors.StatusInfo
     }
 
     val statusIcon = when (log.status) {

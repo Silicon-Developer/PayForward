@@ -48,7 +48,7 @@ import java.util.*
 import kotlin.math.cos
 import kotlin.math.sin
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
     val isActive by viewModel.isActive.collectAsState()
@@ -404,7 +404,7 @@ fun AntiGravityCoreButton(isActive: Boolean, onClick: () -> Unit) {
                     color = coreColor.copy(alpha = 0.6f),
                     style = androidx.compose.ui.graphics.drawscope.Stroke(
                         width = 4.dp.toPx(),
-                        pathEffect = PathEffect.dashPath(floatArrayOf(10f, 20f), rotation)
+                        pathEffect = androidx.compose.ui.graphics.PathEffect.dashPath(floatArrayOf(10f, 20f), rotation)
                     )
                 )
             }
@@ -458,7 +458,7 @@ fun DataStreamConnector() {
             start = Offset(size.width / 2, 0f),
             end = Offset(size.width / 2, size.height),
             strokeWidth = 4.dp.toPx(),
-            pathEffect = PathEffect.dashPath(floatArrayOf(10f, 10f), streamOffset)
+            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPath(floatArrayOf(10f, 10f), streamOffset)
         )
     }
 }
@@ -493,7 +493,7 @@ fun LiveLogEntry(log: MessageLog) {
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(14.dp),
-            crossAxisAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top
         ) {
             // Source icon box
             Box(
