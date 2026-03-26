@@ -265,32 +265,116 @@ fun GreatMenuDrawer(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
-                Text(
-                    text = "[Telegram: t.me/Silicon_official]",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .clickable {
+
+                // Vector Icon Row
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Telegram Icon
+                    val telegramIcon = remember {
+                        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+                            name = "Telegram",
+                            defaultWidth = 24.dp,
+                            defaultHeight = 24.dp,
+                            viewportWidth = 24f,
+                            viewportHeight = 24f
+                        ).apply {
+                            androidx.compose.ui.graphics.vector.path(
+                                fill = androidx.compose.ui.graphics.SolidColor(Color.Black)
+                            ) {
+                                moveTo(20.67f, 3.47f)
+                                lineTo(2.33f, 10.53f)
+                                curveTo(1.4f, 10.9f, 1.4f, 11.45f, 2.15f, 11.69f)
+                                lineTo(6.87f, 13.16f)
+                                lineTo(17.8f, 6.27f)
+                                curveTo(18.32f, 5.95f, 18.79f, 6.13f, 18.39f, 6.48f)
+                                lineTo(9.54f, 14.48f)
+                                lineTo(9.26f, 18.66f)
+                                curveTo(9.67f, 18.66f, 9.85f, 18.47f, 10.08f, 18.25f)
+                                lineTo(12.06f, 16.32f)
+                                lineTo(16.19f, 19.37f)
+                                curveTo(16.95f, 19.79f, 17.5f, 19.57f, 17.69f, 18.67f)
+                                lineTo(21.43f, 4.29f)
+                                curveTo(21.7f, 3.25f, 20.89f, 2.87f, 20.67f, 3.47f)
+                                close()
+                            }
+                        }.build()
+                    }
+
+                    IconButton(
+                        onClick = {
                             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Silicon_official")))
-                        }
-                        .padding(vertical = 4.dp)
-                )
-                
-                Text(
-                    text = "[GitHub: github.com/silicon-developer]",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .clickable {
+                        },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = telegramIcon,
+                            contentDescription = "Telegram",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    // GitHub Icon
+                    val githubIcon = remember {
+                        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+                            name = "GitHub",
+                            defaultWidth = 24.dp,
+                            defaultHeight = 24.dp,
+                            viewportWidth = 24f,
+                            viewportHeight = 24f
+                        ).apply {
+                            androidx.compose.ui.graphics.vector.path(
+                                fill = androidx.compose.ui.graphics.SolidColor(Color.Black)
+                            ) {
+                                moveTo(12.0f, 2.0f)
+                                curveTo(6.477f, 2.0f, 2.0f, 6.477f, 2.0f, 12.0f)
+                                curveTo(2.0f, 16.418f, 4.865f, 20.166f, 8.839f, 21.488f)
+                                curveTo(9.339f, 21.58f, 9.52f, 21.27f, 9.52f, 21.012f)
+                                curveTo(9.52f, 20.783f, 9.51f, 19.982f, 9.505f, 19.11f)
+                                curveTo(6.723f, 19.715f, 6.136f, 17.962f, 6.136f, 17.962f)
+                                curveTo(5.681f, 16.807f, 5.025f, 16.5f, 5.025f, 16.5f)
+                                curveTo(4.118f, 15.881f, 5.093f, 15.894f, 5.093f, 15.894f)
+                                curveTo(6.095f, 15.964f, 6.622f, 16.924f, 6.622f, 16.924f)
+                                curveTo(7.513f, 18.452f, 8.956f, 18.01f, 9.54f, 17.755f)
+                                curveTo(9.63f, 17.091f, 9.9f, 16.65f, 10.198f, 16.398f)
+                                curveTo(7.98f, 16.146f, 5.648f, 15.289f, 5.648f, 11.47f)
+                                curveTo(5.648f, 10.383f, 6.035f, 9.493f, 6.671f, 8.79f)
+                                curveTo(6.568f, 8.538f, 6.23f, 7.525f, 6.768f, 6.137f)
+                                curveTo(6.768f, 6.137f, 7.602f, 5.87f, 9.51f, 7.16f)
+                                curveTo(10.3f, 6.94f, 11.15f, 6.83f, 12.0f, 6.83f)
+                                curveTo(12.85f, 6.83f, 13.7f, 6.94f, 14.49f, 7.16f)
+                                curveTo(16.398f, 5.87f, 17.232f, 6.137f, 17.232f, 6.137f)
+                                curveTo(17.77f, 7.525f, 17.432f, 8.538f, 17.33f, 8.79f)
+                                curveTo(17.966f, 9.493f, 18.353f, 10.383f, 18.353f, 11.47f)
+                                curveTo(18.353f, 15.297f, 16.02f, 16.146f, 13.79f, 16.398f)
+                                curveTo(14.16f, 16.712f, 14.5f, 17.336f, 14.5f, 18.28f)
+                                curveTo(14.5f, 19.632f, 14.488f, 20.725f, 14.488f, 21.012f)
+                                curveTo(14.488f, 21.27f, 14.668f, 21.58f, 15.168f, 21.488f)
+                                curveTo(19.135f, 20.166f, 22.0f, 16.418f, 22.0f, 12.0f)
+                                curveTo(22.0f, 6.477f, 17.523f, 2.0f, 12.0f, 2.0f)
+                                close()
+                            }
+                        }.build()
+                    }
+
+                    IconButton(
+                        onClick = {
                             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/silicon-developer")))
-                        }
-                        .padding(vertical = 4.dp)
-                )
+                        },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = githubIcon,
+                            contentDescription = "GitHub",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
         }
     }

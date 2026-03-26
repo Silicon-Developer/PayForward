@@ -37,6 +37,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _testResult = MutableStateFlow<TestResult?>(null)
     val testResult: StateFlow<TestResult?> = _testResult
 
+    private val _testErrorMessage = MutableStateFlow<String?>(null)
+    val testErrorMessage: StateFlow<String?> = _testErrorMessage
+
     private val _themeMode = MutableStateFlow(storage.themeMode)
     val themeMode: StateFlow<ThemeMode> = _themeMode
 
@@ -97,13 +100,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _isTesting.value = true
             _testResult.value = null
+            _testErrorMessage.value = null
 
             try {
                 val manager = ForwardingManager(getApplication())
                 val success = manager.sendTestMessage()
                 _testResult.value = if (success) TestResult.SUCCESS else TestResult.FAILURE
+                if (!success) {
+                    _testErrorMessage.value = "Payload delivery returned a non-success status."
+                }
             } catch (e: Exception) {
                 _testResult.value = TestResult.FAILURE
+                _testErrorMessage.value = e.localizedMessage ?: "Unknown network error"
             }
 
             _isTesting.value = false

@@ -39,6 +39,22 @@ fun SecurityHubScreen(viewModel: SettingsViewModel = viewModel()) {
     val trustedSenderIds by viewModel.trustedSenderIds.collectAsState()
 
     val haptic = LocalHapticFeedback.current
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val testErrorMessage by viewModel.testErrorMessage.collectAsState()
+
+    // Toast on test result change
+    LaunchedEffect(testResult) {
+        when (testResult) {
+            com.payforward.app.ui.viewmodels.TestResult.SUCCESS -> {
+                android.widget.Toast.makeText(context, "Connection Successful ✓", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            com.payforward.app.ui.viewmodels.TestResult.FAILURE -> {
+                val msg = testErrorMessage ?: "Unknown error"
+                android.widget.Toast.makeText(context, "Connection Failed: $msg", android.widget.Toast.LENGTH_LONG).show()
+            }
+            null -> { /* no-op */ }
+        }
+    }
 
     // Spoof Checker State
     var spoofSenderId by remember { mutableStateOf("") }
