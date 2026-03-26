@@ -19,10 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.payforward.app.ui.screens.*
@@ -275,16 +276,14 @@ fun GreatMenuDrawer(
                 ) {
                     // Telegram Icon
                     val telegramIcon = remember {
-                        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+                        ImageVector.Builder(
                             name = "Telegram",
                             defaultWidth = 24.dp,
                             defaultHeight = 24.dp,
                             viewportWidth = 24f,
                             viewportHeight = 24f
                         ).apply {
-                            androidx.compose.ui.graphics.vector.path(
-                                fill = androidx.compose.ui.graphics.SolidColor(Color.Black)
-                            ) {
+                            path(fill = SolidColor(Color.Black)) {
                                 moveTo(20.67f, 3.47f)
                                 lineTo(2.33f, 10.53f)
                                 curveTo(1.4f, 10.9f, 1.4f, 11.45f, 2.15f, 11.69f)
@@ -320,16 +319,14 @@ fun GreatMenuDrawer(
 
                     // GitHub Icon
                     val githubIcon = remember {
-                        androidx.compose.ui.graphics.vector.ImageVector.Builder(
+                        ImageVector.Builder(
                             name = "GitHub",
                             defaultWidth = 24.dp,
                             defaultHeight = 24.dp,
                             viewportWidth = 24f,
                             viewportHeight = 24f
                         ).apply {
-                            androidx.compose.ui.graphics.vector.path(
-                                fill = androidx.compose.ui.graphics.SolidColor(Color.Black)
-                            ) {
+                            path(fill = SolidColor(Color.Black)) {
                                 moveTo(12.0f, 2.0f)
                                 curveTo(6.477f, 2.0f, 2.0f, 6.477f, 2.0f, 12.0f)
                                 curveTo(2.0f, 16.418f, 4.865f, 20.166f, 8.839f, 21.488f)
