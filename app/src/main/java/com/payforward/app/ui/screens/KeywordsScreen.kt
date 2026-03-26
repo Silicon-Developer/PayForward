@@ -36,6 +36,7 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
     val haptic = LocalHapticFeedback.current
 
     var newKeyword by remember { mutableStateOf("") }
+    var keywordToDelete by remember { mutableStateOf<Keyword?>(null) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -124,12 +125,12 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                         )
                     }
                     items(items = customKeywords, key = { it.id }) { keyword ->
-                        SwipeToDismissKeyword(
+                        KeywordItem(
                             keyword = keyword,
                             onToggle = { viewModel.toggleKeyword(keyword) },
                             onDelete = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                viewModel.deleteKeyword(keyword)
+                                keywordToDelete = keyword
                             },
                             haptic = haptic
                         )
@@ -137,6 +138,46 @@ fun KeywordsScreen(viewModel: KeywordsViewModel = viewModel()) {
                 }
             }
         }
+    }
+
+    // Keyword Deletion Confirmation Dialog
+    keywordToDelete?.let { keyword ->
+        AlertDialog(
+            onDismissRequest = { keywordToDelete = null },
+            title = {
+                Text(
+                    text = "Delete Keyword?",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to remove '${keyword.word}'? This action cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            icon = {
+                Icon(Icons.Filled.DeleteOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteKeyword(keyword)
+                        keywordToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { keywordToDelete = null }) {
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        )
     }
 
     // Add keyword dialog / Regex Generator
@@ -426,6 +467,19 @@ fun KeywordItem(
                     )
                 }
 
+                if (onDelete != null) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = "Delete Keyword",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+
                 Switch(
                     checked = keyword.isEnabled,
                     onCheckedChange = {
@@ -445,50 +499,4 @@ fun KeywordItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SwipeToDismissKeyword(
-    keyword: Keyword,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit,
-    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
-) {
-    val dismissState = rememberDismissState(
-        confirmValueChange = {
-            if (it == DismissValue.DismissedToStart) {
-                onDelete()
-                true
-            } else false
-        }
-    )
 
-    SwipeToDismiss(
-        state = dismissState,
-        background = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.error.copy(alpha = 0.15f))
-                    .padding(horizontal = 20.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        },
-        dismissContent = {
-            KeywordItem(
-                keyword = keyword,
-                onToggle = onToggle,
-                onDelete = onDelete,
-                haptic = haptic
-            )
-        },
-        directions = setOf(DismissDirection.EndToStart)
-    )
-}

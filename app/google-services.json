@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "469312242428",
+    "project_id": "payforward-ade37",
+    "storage_bucket": "payforward-ade37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469312242428:android:9d09c68e5a2fb4e4c38d79",
+        "android_client_info": {
+          "package_name": "com.payforward.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDvbHw79qRp_HqE6hys-3l0u-7jfiAoss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
