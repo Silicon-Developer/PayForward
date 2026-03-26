@@ -103,15 +103,17 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _testErrorMessage.value = null
 
             try {
-                val manager = ForwardingManager(getApplication())
-                val success = manager.sendTestMessage()
+                val success = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    val manager = ForwardingManager(getApplication())
+                    manager.sendTestMessage()
+                }
                 _testResult.value = if (success) TestResult.SUCCESS else TestResult.FAILURE
                 if (!success) {
                     _testErrorMessage.value = "Payload delivery returned a non-success status."
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 _testResult.value = TestResult.FAILURE
-                _testErrorMessage.value = e.localizedMessage ?: "Unknown network error"
+                _testErrorMessage.value = e.localizedMessage ?: "Unknown runtime error"
             }
 
             _isTesting.value = false

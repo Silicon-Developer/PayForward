@@ -87,8 +87,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    // JSON
-    implementation("org.json:json:20231013")
+    // JSON (Native Android org.json is used, no explicit dependency needed to prevent classpath clash)
 
     // Google Fonts
     implementation("androidx.compose.ui:ui-text-google-fonts:1.6.0")
