@@ -29,9 +29,7 @@ Built with a premium "Anti-Gravity" UI and an emphasis on absolute privacy, this
 
 | Dashboard (Anti-Gravity UI) | Keyword Engine | Security Hub |
 | :---: | :---: | :---: |
-| <img src="" width="250"/> | <img src="https://i.rj1.dev/wYYvG.png" width="250"/> | <img src="https://i.rj1.dev/ntWDX.png" width="250"/> |
-
-*(Note: Replace the `src` links above with the actual paths to your screenshots once uploaded to your repository.)*
+| <img src="https://i.rj1.dev/tNZgh.png" width="250"/> | <img src="https://i.rj1.dev/uHQRz.png" width="250"/> | <img src="https://i.rj1.dev/JSvaJ.png" width="250"/> |
 
 ---
 
