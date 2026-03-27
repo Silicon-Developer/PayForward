@@ -78,16 +78,15 @@ When the app intercepts a valid payment, it forwards a clean JSON object to your
 }
 ```
 
-### 👨‍💻 Developed By
+# 👨‍💻 Developed By
 
-# Silicon Developer
+### Silicon Developer
 
 < \ > I developed this app for payment verification directly through the user's phone, empowering businesses to verify transactions automatically without paying hefty fees to third-party services.
 
-# 📫 Connect with me:
+### 📫 Connect with me:
 
-Telegram: t.me/Silicon_Official
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Silicon_Official)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Silicon-Developer)
 
-GitHub: github.com/Silicon-Developer
-
-# Made with ❤️ for the community.
+### Made with ❤️ for the community.
