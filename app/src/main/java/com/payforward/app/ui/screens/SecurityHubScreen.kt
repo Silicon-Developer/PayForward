@@ -252,7 +252,13 @@ fun SecurityHubScreen(viewModel: SettingsViewModel = viewModel()) {
             enabled = !isTesting
         ) {
             if (isTesting) {
-                Text("Verifying Protocol...", style = MaterialTheme.typography.labelLarge)
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Transmitting Protocol...", style = MaterialTheme.typography.labelLarge)
             } else {
                 Icon(Icons.Outlined.OnlinePrediction, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
