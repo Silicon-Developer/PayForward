@@ -47,7 +47,7 @@ Built with a premium "Anti-Gravity" UI and an emphasis on absolute privacy, this
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/silicon-developer/PayForward.git](https://github.com/silicon-developer/PayForward.git)
+    git clone https://github.com/silicon-developer/PayForward.git
     ```
 2.  **Open in Android Studio:**
     Open the project in Android Studio (Iguana or newer recommended).
@@ -76,6 +76,7 @@ When the app intercepts a valid payment, it forwards a clean JSON object to your
   "sender": "Rahul Kumar",
   "raw_message": "Rxvd Rs. 1500.00 from Rahul Kumar via PhonePe. UPI Ref: 1234567890"
 }
+```
 
 ### 👨‍💻 Developed By
 
